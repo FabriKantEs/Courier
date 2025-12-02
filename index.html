@@ -8,12 +8,13 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f7f7f7;
-      color: #111;
+        margin: 0;
+        padding: 0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        background: #fbfcff; /* было #f7f7f7, стало светлее */
+        color: rgb(24, 65, 118);
     }
+
     a {
       color: inherit;
       text-decoration: none;
@@ -239,17 +240,18 @@
       max-width: 640px;
     }
     .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: linear-gradient(135deg, #ffb300, #ff5722);
-      font-size: 11px;
-      font-weight: 600;
-      margin-bottom: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #2aabee, #0077ff); /* было оранжевое, стало голубое */
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.25);
     }
+
     .hero-badge span {
       font-size: 14px;
     }
@@ -376,7 +378,7 @@
     .mode-label {
       font-size: 13px;
       margin-bottom: 4px;
-      color: #555;
+      color: #3d3535;
     }
     .result {
       margin-top: 12px;
@@ -558,10 +560,10 @@
       <div class="header-right">
         <div class="phone" id="phone-label">+34 604 124 113</div>
         <div class="contacts-links">
-          <a href="https://wa.me/34600000000" target="_blank" id="whatsapp-link" class="btn-wa">
+          <a href="https://wa.me/34604124113" target="_blank" id="whatsapp-link" class="btn-wa">
             <span class="btn-icon-circle">WA</span><span>WhatsApp</span>
           </a>
-          <a href="https://t.me/your_courier_bot" target="_blank" id="telegram-link" class="btn-tg">
+          <a href="https://t.me/your_courier_bot_bot" target="_blank" id="telegram-link" class="btn-tg">
             <span class="btn-icon-circle">TG</span><span>Telegram бот</span>
           </a>
           <button type="button" class="btn-voice" id="voice-btn" title="Сделать голосовой заказ">
@@ -754,7 +756,7 @@
         logoTitle: "Мгновенная Курьерская Служба",
         logoSub: "Доставка документов и малых посылок",
         whatsapp: "WhatsApp",
-        telegramBot: "Telegram бот",
+        telegramBot: "Telegram",
         voiceLabel: "Голосом",
         heroTitle: "Мгновенная Курьерская Служба, которая не выносит мозг",
         heroSub1: "«Мгновенная Курьерская Служба» — это когда нужно просто передать конверт или небольшую посылку по городу, не объясняя полчаса оператору, кто вы и зачем живёте. Вы заполняете пару полей, видите стоимость и получаете курьера в нужное время.",
