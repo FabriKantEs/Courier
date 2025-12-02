@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Мгновенная Курьерская Служба — расчёт стоимости доставки</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f7f7f7;
+      color: #111;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* ШАПКА */
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #e0e0e0;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .header-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .logo-block {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #111;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .logo-text-title {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .logo-text-sub {
+      font-size: 12px;
+      color: #777;
+    }
+    .logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .phone {
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .contacts-links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 13px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    /* одинаковая высота и паддинги для WA / TG / Голосом */
+    .contacts-links a,
+    .btn-voice {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      white-space: nowrap;
+      line-height: 1;
+      box-sizing: border-box;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+    }
+
+    .contacts-links a {
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+      color: #111;
+    }
+
+    .contacts-links a:hover,
+    .btn-voice:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+
+    .btn-wa {
+      background: #25D366 !important;
+      border-color: #25D366 !important;
+      color: #fff !important;
+    }
+    .btn-tg {
+      background: #229ED9 !important;
+      border-color: #229ED9 !important;
+      color: #fff !important;
+    }
+    .btn-wa span,
+    .btn-tg span {
+      color: #fff !important;
+    }
+    .btn-icon-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.28);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    /* Кнопка голосового заказа – тот же размер, что WA/TG */
+    .btn-voice {
+      border: none;
+      background: #2aabee;
+      color: #fff;
+      cursor: pointer;
+      min-width: 110px;
+      margin: 0;
+    }
+    .btn-voice svg {
+      width: 14px;
+      height: 14px;
+    }
+    .btn-voice.recording {
+      background: #e53935;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(229,57,53,0.6); }
+      70% { box-shadow: 0 0 0 8px rgba(229,57,53,0); }
+      100% { box-shadow: 0 0 0 0 rgba(229,57,53,0); }
+    }
+
+    /* ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА */
+    .lang-switch {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .lang-btn {
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      background: #f7f7f7;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      min-width: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #444;
+      opacity: 0.5;
+      transition: opacity 0.15s, background 0.15s, color 0.15s;
+      line-height: 1;
+    }
+    .lang-btn.active {
+      color: #fff;
+      border-color: transparent;
+      opacity: 1;
+    }
+    .lang-btn[data-lang="ru"].active {
+      background: #d52b1e;
+    }
+    .lang-btn[data-lang="en"].active {
+      background: #00247d;
+    }
+    .lang-btn[data-lang="es"].active {
+      background: #c60b1e;
+    }
+
+    /* ОСНОВНОЙ КОНТЕЙНЕР */
+    .wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px;
+      min-height: 60vh;
+    }
+
+    /* HERO с фоном и анимацией */
+    .hero {
+      margin-top: 16px;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      padding: 24px 20px;
+      background-image:
+        linear-gradient(120deg, rgba(0,0,0,0.6), rgba(0,0,0,0.25)),
+        url("https://images.pexels.com/photos/6177494/pexels-photo-6177494.jpeg?auto=compress&cs=tinysrgb&w=1600");
+      background-size: cover;
+      background-position: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      animation: heroFadeIn 0.6s ease-out;
+    }
+    @keyframes heroFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ffb300, #ff5722);
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+    }
+    .hero-badge span {
+      font-size: 14px;
+    }
+    .hero-title {
+      font-size: 26px;
+      margin-bottom: 8px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    .hero-subtitle {
+      margin-top: 0;
+      margin-bottom: 8px;
+      line-height: 1.5;
+      font-size: 15px;
+    }
+    .hero-list {
+      margin: 8px 0 0;
+      padding-left: 0;
+      list-style: none;
+      font-size: 14px;
+      color: #f0f0f0;
+    }
+    .hero-list li {
+      margin-bottom: 4px;
+      padding-left: 18px;
+      position: relative;
+    }
+    .hero-list li::before {
+      content: "•";
+      position: absolute;
+      left: 4px;
+      top: 0;
+      color: #ffcc66;
+      font-size: 16px;
+    }
+
+    h2 {
+      font-size: 20px;
+      margin: 8px 0;
+    }
+    p {
+      margin-top: 0;
+      margin-bottom: 16px;
+      line-height: 1.4;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      margin-top: 8px;
+      border-top: 3px solid #2aabee;
+      animation: cardFadeIn 0.5s ease-out;
+    }
+    @keyframes cardFadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    label {
+      font-size: 14px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+      margin-bottom: 12px;
+      transition: border 0.12s ease, box-shadow 0.12s ease;
+      font-family: inherit;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #2aabee;
+      box-shadow: 0 0 0 2px rgba(42,171,238,0.25);
+    }
+
+    /* КНОПКИ ТОЛЬКО ВНУТРИ CARD */
+    .card button {
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      background:#111;
+      color:#fff;
+      margin-bottom: 8px;
+      width: 100%;
+      transition: background 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .card button.secondary {
+      background: #f7f7f7;
+      color: #111;
+      border: 1px solid #ccc;
+    }
+    .card button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      background: #000;
+    }
+    .card button.secondary:hover:not(:disabled) {
+      background: #ffffff;
+    }
+    .card button:disabled {
+      opacity: 0.6;
+      cursor: default;
+      box-shadow: none;
+      transform: none;
+    }
+
+    #map {
+      width: 100%;
+      height: 320px;
+      border-radius: 8px;
+      margin: 12px 0;
+      border: 1px solid #ddd;
+    }
+    .mode-label {
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #555;
+    }
+    .result {
+      margin-top: 12px;
+      font-size: 15px;
+    }
+    .result strong {
+      font-size: 16px;
+    }
+    .error {
+      color: #c00;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .note {
+      font-size: 12px;
+      color: #666;
+      margin-top: 12px;
+    }
+    .voice-status {
+      font-size: 12px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .order-title {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+    .order-hint {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 10px;
+    }
+    .order-status {
+      font-size: 13px;
+      margin-top: 6px;
+      color: #555;
+    }
+
+    /* ФУТЕР */
+    footer {
+      background: #111;
+      color: #eee;
+      margin-top: 24px;
+    }
+    .footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px 16px 24px;
+      display: grid;
+      gap: 16px;
+    }
+    @media (min-width: 720px) {
+      .footer-inner {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+    .footer-block-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .footer-link {
+      display: block;
+      font-size: 13px;
+      color: #ccc;
+      margin-bottom: 4px;
+    }
+    .footer-link:hover {
+      color: #fff;
+    }
+    .footer-small {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 8px;
+    }
+    .footer-bottom {
+      border-top: 1px solid #333;
+      margin-top: 12px;
+      padding-top: 8px;
+      font-size: 11px;
+      text-align: center;
+      color: #777;
+    }
+
+    /* АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ */
+    @media (max-width: 600px) {
+      .header-inner {
+        padding: 10px 12px;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .header-right {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .phone {
+        font-size: 13px;
+      }
+      .contacts-links {
+        justify-content: flex-start;
+      }
+      .contacts-links a,
+      .btn-voice {
+        font-size: 11px;
+        padding: 0 10px;
+        height: 30px;
+      }
+      .wrapper {
+        padding: 12px;
+      }
+      .hero {
+        padding: 18px 14px;
+        margin-top: 12px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+      }
+      .hero-title {
+        font-size: 20px;
+      }
+      .hero-subtitle {
+        font-size: 13px;
+      }
+      .hero-list {
+        font-size: 12px;
+      }
+      h2 {
+        font-size: 18px;
+      }
+      p {
+        font-size: 13px;
+      }
+      input, select, textarea {
+        font-size: 13px;
+        padding: 8px 9px;
+      }
+      .card button {
+        font-size: 13px;
+        padding: 9px 10px;
+      }
+      #map {
+        height: 260px;
+      }
+      .lang-switch {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .hero-title {
+        font-size: 18px;
+      }
+      .logo-text-title {
+        font-size: 16px;
+      }
+      .logo-text-sub {
+        font-size: 11px;
+      }
+      .phone {
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ШАПКА -->
+  <header>
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-circle">M</div>
+        <div class="logo-text">
+          <span class="logo-text-title" id="logo-title">Мгновенная Курьерская Служба</span>
+          <span class="logo-text-sub" id="logo-sub">Доставка документов и малых посылок</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="phone" id="phone-label">+34 604 124 113</div>
+        <div class="contacts-links">
+          <a href="https://wa.me/34600000000" target="_blank" id="whatsapp-link" class="btn-wa">
+            <span class="btn-icon-circle">WA</span><span>WhatsApp</span>
+          </a>
+          <a href="https://t.me/your_courier_bot" target="_blank" id="telegram-link" class="btn-tg">
+            <span class="btn-icon-circle">TG</span><span>Telegram бот</span>
+          </a>
+          <button type="button" class="btn-voice" id="voice-btn" title="Сделать голосовой заказ">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="#ffffff" d="M12 14c1.66 0 3-1.31 3-2.97V6.97C15 5.31 13.66 4 12 4s-3 1.31-3 2.97v4.06C9 12.69 10.34 14 12 14zm4.5-2.97c0 2.28-1.79 4.12-4 4.37V18h2a1 1 0 010 2h-5a1 1 0 010-2h2v-2.6c-2.21-.25-4-2.09-4-4.37a1 1 0 112 0c0 1.48 1.18 2.69 2.63 2.69s2.63-1.21 2.63-2.69a1 1 0 112 0z"/>
+            </svg>
+            <span id="voice-label">Голосом</span>
+          </button>
+          <div class="lang-switch">
+            <button class="lang-btn active" data-lang="ru">RU</button>
+            <button class="lang-btn" data-lang="en">EN</button>
+            <button class="lang-btn" data-lang="es">ES</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ОСНОВНОЙ КОНТЕНТ -->
+  <div class="wrapper">
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge">
+          ⚡ <span>Фикс 8 € по городу</span>
+        </div>
+        <h1 class="hero-title" id="hero-title">
+          Мгновенная Курьерская Служба, которая не выносит мозг
+        </h1>
+        <p class="hero-subtitle" id="hero-sub1">
+          «Мгновенная Курьерская Служба» — это когда нужно просто передать конверт или небольшую посылку по городу,
+          не объясняя полчаса оператору, кто вы и зачем живёте. Вы заполняете пару полей, видите стоимость
+          и получаете курьера в нужное время.
+        </p>
+        <p class="hero-subtitle" id="hero-sub2">
+          В пределах одного города действует честный фикс — <strong>8 € за доставку.</strong>
+        </p>
+        <ul class="hero-list">
+          <li id="hero-li1">Фикс цена по городу — без скрытых доплат.</li>
+          <li id="hero-li2">Сверхбыстрая доставка по городу обычно до 1 часа.</li>
+          <li id="hero-li3">Точный расчёт маршрута по карте для поездок по области.</li>
+          <li id="hero-li4">Заказ через сайт, WhatsApp, Telegram или голосом прямо здесь.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- РАСЧЁТ -->
+    <h2 id="calc-title">Рассчитать стоимость доставки онлайн</h2>
+    <p id="calc-desc">
+      Введите адрес или выберите точки на карте.
+      Если оба адреса находятся в одном городе или расстояние небольшое — действует фиксированная стоимость <strong>8 €</strong>.
+    </p>
+
+    <div class="card">
+      <label for="origin-input" id="origin-label">Адрес забора (откуда забрать)</label>
+      <input id="origin-input" type="text" placeholder="Например: Alicante, Calle ..." />
+
+      <label for="destination-input" id="destination-label">Адрес доставки (куда привезти)</label>
+      <input id="destination-input" type="text" placeholder="Например: Alicante, Avenida ..." />
+
+      <div class="mode-label" id="map-mode-label">Или выберите точки на карте:</div>
+      <button type="button" id="pick-origin" class="secondary">
+        Выбрать точку забора по карте
+      </button>
+      <button type="button" id="pick-destination" class="secondary">
+        Выбрать точку доставки по карте
+      </button>
+
+      <div id="map"></div>
+
+      <button id="calc-btn">Рассчитать стоимость</button>
+
+      <div class="result" id="result"></div>
+      <div class="error" id="error"></div>
+      <div class="note" id="note-text">
+        * Стоимость ориентировочная. Точный тариф может зависеть от габаритов, времени и условий дороги.
+      </div>
+      <div class="voice-status" id="voice-status"></div>
+    </div>
+
+    <!-- ОФОРМЛЕНИЕ ЗАКАЗА -->
+    <div class="card" id="order-card">
+      <h2 class="order-title">Оформить заказ</h2>
+      <p class="order-hint">
+        Проверьте маршрут и стоимость выше, затем оставьте свои контакты. Мы свяжемся с вами для подтверждения доставки.
+      </p>
+
+      <label for="order-name">Ваше имя</label>
+      <input id="order-name" type="text" placeholder="Как к вам обращаться?" />
+
+      <label for="order-phone">Телефон (WhatsApp / звонок)</label>
+      <input id="order-phone" type="text" placeholder="+34 ..." />
+
+      <label for="order-when">Когда забрать посылку</label>
+      <select id="order-when">
+        <option value="asap">Как можно скорее</option>
+        <option value="today">Сегодня в течение дня</option>
+        <option value="schedule">В другое время (укажу в комментарии)</option>
+      </select>
+
+      <label for="order-comment">Комментарий для курьера</label>
+      <textarea id="order-comment" placeholder="Подъезд, этаж, код домофона, что в посылке и т.п."></textarea>
+
+      <button id="order-btn">Отправить заказ</button>
+      <div class="order-status" id="order-status"></div>
+    </div>
+
+  </div>
+
+  <!-- ФУТЕР -->
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-block-title" id="support-title">Поддержка</div>
+        <span class="footer-link" id="support-phone">Телефон: +34 604 124 113</span>
+        <span class="footer-link" id="support-email">E-mail: support@courier-easy.example</span>
+        <span class="footer-small" id="support-hours">
+          Время работы: ежедневно 09:00–21:00.
+        </span>
+      </div>
+      <div>
+        <div class="footer-block-title" id="social-title">Мы в соцсетях</div>
+        <a href="https://t.me/your_courier_channel" target="_blank" class="footer-link" id="social-telegram">Telegram</a>
+        <a href="https://wa.me/34600000000" target="_blank" class="footer-link" id="social-whatsapp">WhatsApp</a>
+        <a href="https://facebook.com/your_courier_page" target="_blank" class="footer-link" id="social-facebook">Facebook</a>
+        <a href="https://instagram.com/your_courier_page" target="_blank" class="footer-link" id="social-instagram">Instagram</a>
+        <a href="https://youtube.com/@your_courier_channel" target="_blank" class="footer-link" id="social-youtube">YouTube</a>
+      </div>
+      <div>
+        <div class="footer-block-title" id="company-title">О компании и документы</div>
+        <span class="footer-link" id="company-name">ООО «Мгновенная Курьерская Служба»</span>
+        <span class="footer-link" id="company-id">CIF / NIF: X0000000X</span>
+        <span class="footer-link" id="company-address">Испания, Аликанте, Calle Пример, 1</span>
+        <a href="#terms" class="footer-link" id="terms-link">Условия обслуживания</a>
+        <a href="#privacy" class="footer-link" id="privacy-link">Политика конфиденциальности</a>
+      </div>
+      <div class="footer-bottom" id="footer-bottom">
+        © 2025 Мгновенная Курьерская Служба. Все права защищены.
+      </div>
+    </div>
+  </footer>
+
+  <!-- УСЛОВИЯ -->
+  <div id="terms" class="wrapper" style="font-size: 12px; color:#555; padding-top:0;">
+    <h2 style="font-size:16px;" id="terms-title">Условия обслуживания (кратко)</h2>
+    <p id="terms-text">
+      Заказывая доставку, вы подтверждаете корректность указанных данных и согласие с условиями сервиса.
+      Мы оставляем за собой право изменить стоимость в случае существенного отличия фактического маршрута,
+      габаритов или условий хранения посылки. Полная версия условий может быть предоставлена по запросу.
+    </p>
+  </div>
+
+  <!-- ПОЛИТИКА -->
+  <div id="privacy" class="wrapper" style="font-size: 12px; color:#555; padding-top:0;">
+    <h2 style="font-size:16px;" id="privacy-title">Политика конфиденциальности (кратко)</h2>
+    <p id="privacy-text">
+      Мы используем указанные вами контакты и адреса только для организации доставки и связи с вами.
+      Данные не передаются третьим лицам, кроме случаев, связанных с исполнением услуги (курьеры, платёжные сервисы)
+      и требований закона. По запросу вы можете запросить удаление своих данных.
+    </p>
+  </div>
+
+  <script>
+    const FIXED_CITY_PRICE = 8;
+    const BASE_PRICE = 8;
+    const PRICE_PER_KM = 0.9;
+    const CITY_DISTANCE_KM = 7;
+
+    let map, geocoder;
+    let originData = null;
+    let destinationData = null;
+    let originMarker = null;
+    let destinationMarker = null;
+    let clickMode = null;
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
+    // URL для голосового заказа и для обычного заказа
+    const N8N_WEBHOOK_URL = "https://YOUR_N8N_HOST/webhook/voice-order";      // ЗАМЕНИ
+    const ORDER_WEBHOOK_URL = "https://YOUR_N8N_HOST/webhook/create-order";   // ЗАМЕНИ
+
+    let currentLang = 'ru';
+    let lastCalc = null; // сюда сохраняем результат последнего расчёта
+
+    const translations = {
+      ru: {
+        logoTitle: "Мгновенная Курьерская Служба",
+        logoSub: "Доставка документов и малых посылок",
+        whatsapp: "WhatsApp",
+        telegramBot: "Telegram бот",
+        voiceLabel: "Голосом",
+        heroTitle: "Мгновенная Курьерская Служба, которая не выносит мозг",
+        heroSub1: "«Мгновенная Курьерская Служба» — это когда нужно просто передать конверт или небольшую посылку по городу, не объясняя полчаса оператору, кто вы и зачем живёте. Вы заполняете пару полей, видите стоимость и получаете курьера в нужное время.",
+        heroSub2: "В пределах одного города действует честный фикс — 8 € за доставку.",
+        heroLi1: "Фикс цена по городу — без скрытых доплат.",
+        heroLi2: "Сверхбыстрая доставка по городу обычно до 1 часа.",
+        heroLi3: "Точный расчёт маршрута по карте для поездок по области.",
+        heroLi4: "Заказ через сайт, WhatsApp, Telegram или голосом прямо здесь.",
+        calcTitle: "Рассчитать стоимость доставки онлайн",
+        calcDesc: "Введите адрес или выберите точки на карте. Если оба адреса находятся в одном городе или расстояние небольшое — действует фиксированная стоимость 8 €.",
+        originLabel: "Адрес забора (откуда забрать)",
+        originPlaceholder: "Например: Alicante, Calle ...",
+        destinationLabel: "Адрес доставки (куда привезти)",
+        destinationPlaceholder: "Например: Alicante, Avenida ...",
+        mapMode: "Или выберите точки на карте:",
+        pickOrigin: "Выбрать точку забора по карте",
+        pickDestination: "Выбрать точку доставки по карте",
+        calcButton: "Рассчитать стоимость",
+        note: "* Стоимость ориентировочная. Точный тариф может зависеть от габаритов, времени и условий дороги.",
+        supportTitle: "Поддержка",
+        supportPhone: "Телефон: +34 600 000 000",
+        supportEmail: "E-mail: support@courier-easy.example",
+        supportHours: "Время работы: ежедневно 09:00–21:00.",
+        socialTitle: "Мы в соцсетях",
+        companyTitle: "О компании и документы",
+        companyName: "ООО «Мгновенная Курьерская Служба»",
+        companyId: "CIF / NIF: X0000000X",
+        companyAddress: "Испания, Аликанте, Calle Пример, 1",
+        termsLink: "Условия обслуживания",
+        privacyLink: "Политика конфиденциальности",
+        footerBottom: "© 2025 Мгновенная Курьерская Служба. Все права защищены.",
+        termsTitle: "Условия обслуживания (кратко)",
+        termsText: "Заказывая доставку, вы подтверждаете корректность указанных данных и согласие с условиями сервиса. Мы оставляем за собой право изменить стоимость в случае существенного отличия фактического маршрута, габаритов или условий хранения посылки. Полная версия условий может быть предоставлена по запросу.",
+        privacyTitle: "Политика конфиденциальности (кратко)",
+        privacyText: "Мы используем указанные вами контакты и адреса только для организации доставки и связи с вами. Данные не передаются третьим лицам, кроме случаев, связанных с исполнением услуги и требований закона. По запросу вы можете запросить удаление своих данных.",
+        distanceUnit: "км",
+        msg: {
+          clickOrigin: "Кликните на карте точку забора.",
+          clickDestination: "Кликните на карте точку доставки.",
+          needPoints: "Нужно задать и точку забора, и точку доставки.",
+          distanceError: "Ошибка при расчёте расстояния.",
+          routeNotFound: "Маршрут не найден.",
+          addressNotFound: "Адрес по точке определить не удалось, но координаты сохранены.",
+          calcButtonCounting: "Считаем...",
+          calcButtonDefault: "Рассчитать стоимость",
+          routeLabel: "Маршрут",
+          distanceLabel: "Расстояние",
+          priceLabel: "Стоимость доставки",
+          browserNoVoice: "Браузер не поддерживает запись голосовых.",
+          recordingOn: "Идёт запись... нажмите ещё раз, чтобы отправить.",
+          micError: "Не удалось получить доступ к микрофону.",
+          sendingVoice: "Отправляем голосовой заказ...",
+          voiceOk: "Голосовой заказ отправлен. Мы свяжемся с вами для подтверждения.",
+          voiceError: "Ошибка при отправке голосового заказа."
+        }
+      },
+      en: {
+        logoTitle: "Instant Courier Service",
+        logoSub: "Documents & small parcels delivery",
+        whatsapp: "WhatsApp",
+        telegramBot: "Telegram bot",
+        voiceLabel: "Voice",
+        heroTitle: "Instant Courier Service that keeps things simple",
+        heroSub1: "Instant Courier Service is for those moments when you just need to send an envelope or a small parcel across the city without a 20-minute call with support. You fill in a couple of fields, see the price, and the courier arrives at the agreed time.",
+        heroSub2: "Within one city we have a fair flat rate — 8 € per delivery.",
+        heroLi1: "Flat 8 € inside the city — no hidden fees.",
+        heroLi2: "Ultra-fast city delivery usually within 1 hour.",
+        heroLi3: "Accurate distance calculation for regional routes.",
+        heroLi4: "Order via website, WhatsApp, Telegram or a voice message right here.",
+        calcTitle: "Calculate delivery price online",
+        calcDesc: "Enter the addresses or choose points on the map. If both addresses are in the same city or the distance is short, a fixed price of 8 € applies.",
+        originLabel: "Pickup address (where to collect)",
+        originPlaceholder: "Example: Alicante, Calle ...",
+        destinationLabel: "Delivery address (where to deliver)",
+        destinationPlaceholder: "Example: Alicante, Avenida ...",
+        mapMode: "Or choose points on the map:",
+        pickOrigin: "Pick pickup point on map",
+        pickDestination: "Pick delivery point on map",
+        calcButton: "Calculate price",
+        note: "* The price is approximate. The final cost may depend on size, time and road conditions.",
+        supportTitle: "Support",
+        supportPhone: "Phone: +34 600 000 000",
+        supportEmail: "E-mail: support@courier-easy.example",
+        supportHours: "Working hours: daily 09:00–21:00.",
+        socialTitle: "Follow us",
+        companyTitle: "Company & legal",
+        companyName: "Instant Courier Service S.L.",
+        companyId: "CIF / NIF: X0000000X",
+        companyAddress: "Spain, Alicante, Calle Example, 1",
+        termsLink: "Terms of service",
+        privacyLink: "Privacy policy",
+        footerBottom: "© 2025 Instant Courier Service. All rights reserved.",
+        termsTitle: "Terms of service (short)",
+        termsText: "By placing an order you confirm that the provided data is correct and you agree with our service terms. We may adjust the price if the actual route, size or storage conditions differ significantly. Full terms are available on request.",
+        privacyTitle: "Privacy policy (short)",
+        privacyText: "We use your contact details and addresses only to provide the delivery service and contact you. Data is not shared with third parties except for couriers, payment providers and when required by law. You may request deletion of your data.",
+        distanceUnit: "km",
+        msg: {
+          clickOrigin: "Click pickup point on the map.",
+          clickDestination: "Click delivery point on the map.",
+          needPoints: "Please set both pickup and delivery points.",
+          distanceError: "Error calculating distance.",
+          routeNotFound: "Route could not be found.",
+          addressNotFound: "Address for this point was not found, but coordinates are saved.",
+          calcButtonCounting: "Calculating...",
+          calcButtonDefault: "Calculate price",
+          routeLabel: "Route",
+          distanceLabel: "Distance",
+          priceLabel: "Delivery price",
+          browserNoVoice: "Your browser does not support voice recording.",
+          recordingOn: "Recording... tap again to send.",
+          micError: "Could not access microphone.",
+          sendingVoice: "Sending voice order...",
+          voiceOk: "Voice order sent. We will contact you to confirm.",
+          voiceError: "Error while sending voice order."
+        }
+      },
+      es: {
+        logoTitle: "Mensajería Instantánea",
+        logoSub: "Entrega de documentos y pequeños paquetes",
+        whatsapp: "WhatsApp",
+        telegramBot: "Bot de Telegram",
+        voiceLabel: "Voz",
+        heroTitle: "Mensajería en Alicante que no complica la vida",
+        heroSub1: "Mensajería Instantánea es para cuando solo necesitas enviar un sobre o un paquete pequeño por la ciudad, sin llamadas eternas al call center. Rellenas dos campos, ves el precio y el mensajero llega en la franja acordada.",
+        heroSub2: "Dentro de la misma ciudad tenemos tarifa fija — 8 € por entrega.",
+        heroLi1: "Tarifa fija 8 € dentro de la ciudad, sin cargos ocultos.",
+        heroLi2: "Entrega ultrarrápida en la ciudad normalmente en 1 hora.",
+        heroLi3: "Cálculo preciso de la ruta para envíos en la provincia.",
+        heroLi4: "Pide desde la web, WhatsApp, Telegram o con un mensaje de voz aquí mismo.",
+        calcTitle: "Calcula el precio del envío",
+        calcDesc: "Introduce las direcciones o elige los puntos en el mapa. Si ambas direcciones están en la misma ciudad o la distancia es corta, se aplica una tarifa fija de 8 €.",
+        originLabel: "Dirección de recogida",
+        originPlaceholder: "Ejemplo: Alicante, Calle ...",
+        destinationLabel: "Dirección de entrega",
+        destinationPlaceholder: "Ejemplo: Alicante, Avenida ...",
+        mapMode: "O elige los puntos en el mapa:",
+        pickOrigin: "Elegir punto de recogida",
+        pickDestination: "Elegir punto de entrega",
+        calcButton: "Calcular precio",
+        note: "* El precio es orientativo. El coste final puede variar según volumen, horario y tráfico.",
+        supportTitle: "Soporte",
+        supportPhone: "Teléfono: +34 600 000 000",
+        supportEmail: "E-mail: support@courier-easy.example",
+        supportHours: "Horario: todos los días 09:00–21:00.",
+        socialTitle: "Redes sociales",
+        companyTitle: "Empresa y documentos",
+        companyName: "Mensajería Instantánea S.L.",
+        companyId: "CIF / NIF: X0000000X",
+        companyAddress: "España, Alicante, Calle Ejemplo, 1",
+        termsLink: "Términos del servicio",
+        privacyLink: "Política de privacidad",
+        footerBottom: "© 2025 Mensajería Instantánea. Todos los derechos reservados.",
+        termsTitle: "Términos del servicio (resumen)",
+        termsText: "Al solicitar un envío confirmas que los datos son correctos y aceptas nuestros términos. Podemos ajustar el precio si la ruta real, el volumen o las condiciones cambian de forma significativa. La versión completa está disponible bajo petición.",
+        privacyTitle: "Política de privacidad (resumen)",
+        privacyText: "Usamos tus datos de contacto y direcciones solo para organizar el envío y comunicarnos contigo. No compartimos datos con terceros salvo mensajeros, proveedores de pago o cuando lo exige la ley. Puedes solicitar la eliminación de tus datos.",
+        distanceUnit: "km",
+        msg: {
+          clickOrigin: "Haz clic en el punto de recogida en el mapa.",
+          clickDestination: "Haz clic en el punto de entrega en el mapa.",
+          needPoints: "Debes indicar los puntos de recogida y entrega.",
+          distanceError: "Error al calcular la distancia.",
+          routeNotFound: "No se ha encontrado la ruta.",
+          addressNotFound: "No se ha podido obtener la dirección, pero se han guardado las coordenadas.",
+          calcButtonCounting: "Calculando...",
+          calcButtonDefault: "Calcular precio",
+          routeLabel: "Ruta",
+          distanceLabel: "Distancia",
+          priceLabel: "Precio del envío",
+          browserNoVoice: "Tu navegador no admite grabación de voz.",
+          recordingOn: "Grabando... toca de nuevo para enviar.",
+          micError: "No se ha podido acceder al micrófono.",
+          sendingVoice: "Enviando pedido de voz...",
+          voiceOk: "Pedido de voz enviado. Nos pondremos en contacto para confirmar.",
+          voiceError: "Error al enviar el pedido de voz."
+        }
+      }
+    };
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang] || translations.ru;
+
+      document.documentElement.lang = lang;
+
+      document.getElementById('logo-title').textContent = t.logoTitle;
+      document.getElementById('logo-sub').textContent = t.logoSub;
+      document.getElementById('whatsapp-link').lastElementChild.textContent = t.whatsapp;
+      document.getElementById('telegram-link').lastElementChild.textContent = t.telegramBot;
+      document.getElementById('voice-label').textContent = t.voiceLabel;
+
+      document.getElementById('hero-title').textContent = t.heroTitle;
+      document.getElementById('hero-sub1').textContent = t.heroSub1;
+      document.getElementById('hero-sub2').innerHTML = t.heroSub2.replace("8 €", "<strong>8 €</strong>");
+      document.getElementById('hero-li1').textContent = t.heroLi1;
+      document.getElementById('hero-li2').textContent = t.heroLi2;
+      document.getElementById('hero-li3').textContent = t.heroLi3;
+      document.getElementById('hero-li4').textContent = t.heroLi4;
+
+      document.getElementById('calc-title').textContent = t.calcTitle;
+      document.getElementById('calc-desc').innerHTML = t.calcDesc.replace("8 €", "<strong>8 €</strong>");
+
+      document.getElementById('origin-label').textContent = t.originLabel;
+      document.getElementById('destination-label').textContent = t.destinationLabel;
+      document.getElementById('map-mode-label').textContent = t.mapMode;
+      document.getElementById('pick-origin').textContent = t.pickOrigin;
+      document.getElementById('pick-destination').textContent = t.pickDestination;
+      document.getElementById('calc-btn').textContent = t.calcButton;
+      document.getElementById('note-text').textContent = t.note;
+
+      const originInput = document.getElementById('origin-input');
+      const destinationInput = document.getElementById('destination-input');
+      originInput.placeholder = t.originPlaceholder;
+      destinationInput.placeholder = t.destinationPlaceholder;
+
+      document.getElementById('support-title').textContent = t.supportTitle;
+      document.getElementById('support-phone').textContent = t.supportPhone;
+      document.getElementById('support-email').textContent = t.supportEmail;
+      document.getElementById('support-hours').textContent = t.supportHours;
+      document.getElementById('social-title').textContent = t.socialTitle;
+      document.getElementById('company-title').textContent = t.companyTitle;
+      document.getElementById('company-name').textContent = t.companyName;
+      document.getElementById('company-id').textContent = t.companyId;
+      document.getElementById('company-address').textContent = t.companyAddress;
+      document.getElementById('terms-link').textContent = t.termsLink;
+      document.getElementById('privacy-link').textContent = t.privacyLink;
+      document.getElementById('footer-bottom').textContent = t.footerBottom;
+
+      document.getElementById('terms-title').textContent = t.termsTitle;
+      document.getElementById('terms-text').textContent = t.termsText;
+      document.getElementById('privacy-title').textContent = t.privacyTitle;
+      document.getElementById('privacy-text').textContent = t.privacyText;
+
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+    }
+
+    function getMsg() {
+      const t = translations[currentLang] || translations.ru;
+      return t.msg;
+    }
+
+    function getCityFromComponents(components) {
+      if (!components) return "";
+      let city = "";
+
+      for (const comp of components) {
+        if (comp.types.includes("locality")) {
+          city = comp.long_name;
+          break;
+        }
+      }
+      if (!city) {
+        for (const comp of components) {
+          if (
+            comp.types.includes("postal_town") ||
+            comp.types.includes("administrative_area_level_3") ||
+            comp.types.includes("administrative_area_level_2")
+          ) {
+            city = comp.long_name;
+            break;
+          }
+        }
+      }
+      return city || "";
+    }
+
+    function setMarker(type, location) {
+      if (type === "origin") {
+        if (!originMarker) {
+          originMarker = new google.maps.Marker({
+            map,
+            position: location,
+            label: "A",
+          });
+        } else {
+          originMarker.setPosition(location);
+        }
+      } else if (type === "destination") {
+        if (!destinationMarker) {
+          destinationMarker = new google.maps.Marker({
+            map,
+            position: location,
+            label: "B",
+          });
+        } else {
+          destinationMarker.setPosition(location);
+        }
+      }
+    }
+
+    function initMap() {
+      const originInput = document.getElementById("origin-input");
+      const destinationInput = document.getElementById("destination-input");
+      const calcBtn = document.getElementById("calc-btn");
+      const resultEl = document.getElementById("result");
+      const errorEl = document.getElementById("error");
+      const pickOriginBtn = document.getElementById("pick-origin");
+      const pickDestinationBtn = document.getElementById("pick-destination");
+      const voiceBtn = document.getElementById("voice-btn");
+      const voiceStatus = document.getElementById("voice-status");
+      const orderBtn = document.getElementById("order-btn");
+      const orderStatus = document.getElementById("order-status");
+
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 38.3452, lng: -0.4810 },
+        zoom: 11,
+      });
+
+      geocoder = new google.maps.Geocoder();
+
+      const originAutocomplete = new google.maps.places.Autocomplete(originInput, {
+        fields: ["place_id", "formatted_address", "address_components", "geometry"],
+      });
+      const destinationAutocomplete = new google.maps.places.Autocomplete(destinationInput, {
+        fields: ["place_id", "formatted_address", "address_components", "geometry"],
+      });
+
+      originAutocomplete.addListener("place_changed", () => {
+        const place = originAutocomplete.getPlace();
+        if (!place || !place.geometry) return;
+
+        originData = {
+          placeId: place.place_id,
+          formatted_address: place.formatted_address,
+          city: getCityFromComponents(place.address_components),
+          location: place.geometry.location,
+        };
+
+        setMarker("origin", place.geometry.location);
+        map.panTo(place.geometry.location);
+      });
+
+      destinationAutocomplete.addListener("place_changed", () => {
+        const place = destinationAutocomplete.getPlace();
+        if (!place || !place.geometry) return;
+
+        destinationData = {
+          placeId: place.place_id,
+          formatted_address: place.formatted_address,
+          city: getCityFromComponents(place.address_components),
+          location: place.geometry.location,
+        };
+
+        setMarker("destination", place.geometry.location);
+        map.panTo(place.geometry.location);
+      });
+
+      pickOriginBtn.addEventListener("click", () => {
+        clickMode = "origin";
+        errorEl.textContent = getMsg().clickOrigin;
+      });
+
+      pickDestinationBtn.addEventListener("click", () => {
+        clickMode = "destination";
+        errorEl.textContent = getMsg().clickDestination;
+      });
+
+      map.addListener("click", (e) => {
+        if (!clickMode) return;
+
+        const type = clickMode;
+        const clickedLocation = e.latLng;
+
+        setMarker(type, clickedLocation);
+
+        if (type === "origin") {
+          originData = originData || {};
+          originData.location = clickedLocation;
+        } else if (type === "destination") {
+          destinationData = destinationData || {};
+          destinationData.location = clickedLocation;
+        }
+
+        geocoder.geocode({ location: clickedLocation }, (results, status) => {
+          if (status === "OK" && results && results[0]) {
+            const res = results[0];
+            const city = getCityFromComponents(res.address_components);
+
+            if (type === "origin") {
+              originData.placeId = res.place_id;
+              originData.formatted_address = res.formatted_address;
+              originData.city = city;
+              originInput.value = res.formatted_address;
+            } else if (type === "destination") {
+              destinationData.placeId = res.place_id;
+              destinationData.formatted_address = res.formatted_address;
+              destinationData.city = city;
+              destinationInput.value = res.formatted_address;
+            }
+            errorEl.textContent = "";
+          } else {
+            if (type === "origin") {
+              originInput.value = "Point on map";
+            } else {
+              destinationInput.value = "Point on map";
+            }
+            errorEl.textContent = getMsg().addressNotFound;
+          }
+        });
+
+        map.panTo(clickedLocation);
+        clickMode = null;
+      });
+
+      calcBtn.addEventListener("click", () => {
+        const msg = getMsg();
+        const t = translations[currentLang] || translations.ru;
+
+        errorEl.textContent = "";
+        resultEl.textContent = "";
+        orderStatus.textContent = "";
+        lastCalc = null;
+
+        if (!originData || !destinationData || !originData.location || !destinationData.location) {
+          errorEl.textContent = msg.needPoints;
+          return;
+        }
+
+        const cityA = originData.city || "";
+        const cityB = destinationData.city || "";
+
+        const service = new google.maps.DistanceMatrixService();
+        calcBtn.disabled = true;
+        calcBtn.textContent = msg.calcButtonCounting;
+
+        service.getDistanceMatrix(
+          {
+            origins: [originData.location],
+            destinations: [destinationData.location],
+            travelMode: google.maps.TravelMode.DRIVING,
+            unitSystem: google.maps.UnitSystem.METRIC,
+          },
+          (response, status) => {
+            const m = getMsg();
+            calcBtn.disabled = false;
+            calcBtn.textContent = m.calcButtonDefault;
+
+            if (status !== "OK") {
+              errorEl.textContent = m.distanceError;
+              return;
+            }
+
+            const row = response.rows[0].elements[0];
+            if (row.status !== "OK") {
+              errorEl.textContent = m.routeNotFound;
+              return;
+            }
+
+            const distanceKm = row.distance.value / 1000;
+            const sameCity =
+              cityA && cityB &&
+              cityA.toLowerCase().trim() === cityB.toLowerCase().trim();
+
+            let price;
+            if (sameCity || distanceKm <= CITY_DISTANCE_KM) {
+              price = FIXED_CITY_PRICE;
+            } else {
+              price = BASE_PRICE + PRICE_PER_KM * distanceKm;
+            }
+
+            const addrA = originData.formatted_address || cityA || "?";
+            const addrB = destinationData.formatted_address || cityB || "?";
+
+            resultEl.innerHTML = `
+              ${m.routeLabel}:<br>
+              <strong>${addrA}</strong><br>
+              <strong>→ ${addrB}</strong><br><br>
+              ${m.distanceLabel}: <strong>${distanceKm.toFixed(1)} ${t.distanceUnit}</strong><br>
+              ${m.priceLabel}: <strong>${price.toFixed(2)} €</strong>
+            `;
+
+            lastCalc = {
+              distanceKm,
+              price,
+              addrA,
+              addrB,
+              cityA,
+              cityB
+            };
+          }
+        );
+      });
+
+      // Оформление заказа
+      orderBtn.addEventListener("click", async () => {
+        orderStatus.style.color = "#555";
+        orderStatus.textContent = "";
+
+        if (!lastCalc) {
+          orderStatus.style.color = "#c00";
+          orderStatus.textContent = "Сначала рассчитайте стоимость доставки.";
+          return;
+        }
+
+        const name = document.getElementById("order-name").value.trim();
+        const phone = document.getElementById("order-phone").value.trim();
+        const when = document.getElementById("order-when").value;
+        const comment = document.getElementById("order-comment").value.trim();
+
+        if (!name || !phone) {
+          orderStatus.style.color = "#c00";
+          orderStatus.textContent = "Введите, пожалуйста, имя и телефон.";
+          return;
+        }
+
+        orderBtn.disabled = true;
+        orderBtn.textContent = "Отправляем...";
+
+        const payload = {
+          type: "courier_order",
+          name,
+          phone,
+          when,
+          comment,
+          origin: {
+            address: originData?.formatted_address || "",
+            city: originData?.city || "",
+            lat: originData?.location?.lat ? originData.location.lat() : null,
+            lng: originData?.location?.lng ? originData.location.lng() : null
+          },
+          destination: {
+            address: destinationData?.formatted_address || "",
+            city: destinationData?.city || "",
+            lat: destinationData?.location?.lat ? destinationData.location.lat() : null,
+            lng: destinationData?.location?.lng ? destinationData.location.lng() : null
+          },
+          calculation: {
+            distance_km: lastCalc.distanceKm,
+            price_eur: lastCalc.price,
+            same_city: lastCalc.cityA && lastCalc.cityB && lastCalc.cityA.toLowerCase().trim() === lastCalc.cityB.toLowerCase().trim()
+          },
+          meta: {
+            user_agent: navigator.userAgent,
+            language: currentLang,
+            created_at: new Date().toISOString()
+          }
+        };
+
+        try {
+          const res = await fetch(ORDER_WEBHOOK_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            throw new Error("N8N error " + res.status);
+          }
+
+          orderStatus.style.color = "green";
+          orderStatus.textContent = "Заказ отправлен. Мы свяжемся с вами в ближайшее время для подтверждения.";
+        } catch (err) {
+          console.error(err);
+          orderStatus.style.color = "#c00";
+          orderStatus.textContent = "Ошибка при отправке заказа. Попробуйте ещё раз или свяжитесь с нами по телефону.";
+        } finally {
+          orderBtn.disabled = false;
+          orderBtn.textContent = "Отправить заказ";
+        }
+      });
+
+      // Голосовой заказ
+      voiceBtn.addEventListener("click", async () => {
+        const m = getMsg();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          voiceStatus.textContent = m.browserNoVoice;
+          return;
+        }
+
+        if (!isRecording) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioChunks = [];
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.addEventListener("dataavailable", (event) => {
+              if (event.data.size > 0) {
+                audioChunks.push(event.data);
+              }
+            });
+
+            mediaRecorder.addEventListener("stop", () => {
+              const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+              sendVoiceToN8n(audioBlob);
+              stream.getTracks().forEach(track => track.stop());
+            });
+
+            mediaRecorder.start();
+            isRecording = true;
+            voiceBtn.classList.add("recording");
+            voiceStatus.textContent = m.recordingOn;
+          } catch (err) {
+            console.error(err);
+            voiceStatus.textContent = m.micError;
+          }
+        } else {
+          mediaRecorder.stop();
+          isRecording = false;
+          voiceBtn.classList.remove("recording");
+          voiceStatus.textContent = m.sendingVoice;
+        }
+      });
+
+      async function sendVoiceToN8n(audioBlob) {
+        const m = getMsg();
+        try {
+          const formData = new FormData();
+          formData.append("file", audioBlob, "voice.webm");
+          formData.append("origin_text", originData?.formatted_address || "");
+          formData.append("destination_text", destinationData?.formatted_address || "");
+
+          const response = await fetch(N8N_WEBHOOK_URL, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("N8N error " + response.status);
+          }
+
+          voiceStatus.textContent = m.voiceOk;
+        } catch (err) {
+          console.error(err);
+          voiceStatus.textContent = m.voiceError;
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      applyLanguage('ru');
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          applyLanguage(btn.dataset.lang);
+        });
+      });
+    });
+  </script>
+
+  <!-- GOOGLE MAPS API -->
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCc_pHIHN3JYqQoQwSc1Dvbv7EPQ7Zicy0&libraries=places&callback=initMap"
+    async
+    defer
+  ></script>
+
+</body>
+</html>
